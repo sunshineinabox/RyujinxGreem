@@ -56,6 +56,13 @@ namespace Ryujinx.Graphics.Vulkan
 
         public PinnedSpan<byte> GetData()
         {
+            int minTexelBufferOffsetAlignment = (int)_gd.Capabilities.MinTexelBufferAlignment;
+            
+            if (_offset % minTexelBufferOffsetAlignment != 0)
+            {
+                _offset += (minTexelBufferOffsetAlignment - (_offset % minTexelBufferOffsetAlignment));
+            }
+            
             return _gd.GetBufferData(_bufferHandle, _offset, _size);
         }
 
@@ -86,6 +93,13 @@ namespace Ryujinx.Graphics.Vulkan
         /// <inheritdoc/>
         public void SetData(MemoryOwner<byte> data)
         {
+            int minTexelBufferOffsetAlignment = (int)_gd.Capabilities.MinTexelBufferAlignment;
+            
+            if (_offset % minTexelBufferOffsetAlignment != 0)
+            {
+                _offset += (minTexelBufferOffsetAlignment - (_offset % minTexelBufferOffsetAlignment));
+            }
+            
             _gd.SetBufferData(_bufferHandle, _offset, data.Span);
             data.Dispose();
         }
@@ -104,16 +118,24 @@ namespace Ryujinx.Graphics.Vulkan
 
         public void SetStorage(BufferRange buffer)
         {
+            int minTexelBufferOffsetAlignment = (int)_gd.Capabilities.MinTexelBufferAlignment;
+            int bufferOffset = buffer.Offset;
+            
+            if (bufferOffset % minTexelBufferOffsetAlignment != 0)
+            {
+                bufferOffset += (minTexelBufferOffsetAlignment - (bufferOffset % minTexelBufferOffsetAlignment));
+            }
+            
             if (_bufferHandle == buffer.Handle &&
-                _offset == buffer.Offset &&
+                _offset == bufferOffset &&
                 _size == buffer.Size &&
                 _bufferCount == _gd.BufferManager.BufferCount)
             {
                 return;
-            }
+            } 
 
             _bufferHandle = buffer.Handle;
-            _offset = buffer.Offset;
+            _offset = bufferOffset;
             _size = buffer.Size;
             _bufferCount = _gd.BufferManager.BufferCount;
 
@@ -122,6 +144,13 @@ namespace Ryujinx.Graphics.Vulkan
 
         public BufferView GetBufferView(CommandBufferScoped cbs, bool write)
         {
+            int minTexelBufferOffsetAlignment = (int)_gd.Capabilities.MinTexelBufferAlignment;
+            
+            if (_offset % minTexelBufferOffsetAlignment != 0)
+            {
+                _offset += (minTexelBufferOffsetAlignment - (_offset % minTexelBufferOffsetAlignment));
+            }
+            
             _bufferView ??= _gd.BufferManager.CreateView(_bufferHandle, VkFormat, _offset, _size, ReleaseImpl);
 
             return _bufferView?.Get(cbs, _offset, _size, write).Value ?? default;

@@ -381,6 +381,14 @@ namespace Ryujinx.Graphics.Vulkan
                 features2.PNext = &supportedFeaturesDynamicAttachmentFeedbackLoopLayout;
             }
 
+            PhysicalDevicePageableDeviceLocalMemoryFeaturesEXT supportedPageableDeviceLocalMemoryFeatures = new()
+            {
+                SType = StructureType.PhysicalDevicePageableDeviceLocalMemoryFeaturesExt,
+                PNext = features2.PNext,
+            };
+
+            features2.PNext = &supportedPageableDeviceLocalMemoryFeatures;
+
             PhysicalDeviceVulkan12Features supportedPhysicalDeviceVulkan12Features = new()
             {
                 SType = StructureType.PhysicalDeviceVulkan12Features,
@@ -585,6 +593,15 @@ namespace Ryujinx.Graphics.Vulkan
 
                 pExtendedFeatures = &featuresDynamicAttachmentFeedbackLoopLayout;
             }
+            
+            PhysicalDevicePageableDeviceLocalMemoryFeaturesEXT featuresPageableDeviceLocalMemory = new()
+            {
+                SType = StructureType.PhysicalDevicePageableDeviceLocalMemoryFeaturesExt,
+                PNext = pExtendedFeatures,
+                PageableDeviceLocalMemory = supportedPageableDeviceLocalMemoryFeatures.PageableDeviceLocalMemory,
+            };
+
+            pExtendedFeatures = &featuresPageableDeviceLocalMemory;
 
             var enabledExtensions = _requiredExtensions.Union(_desirableExtensions.Intersect(physicalDevice.DeviceExtensions)).ToArray();
 
